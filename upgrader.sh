@@ -6,6 +6,12 @@ yellow_color='\e[0;33m'
 rest_color='\e[0m'
 
 blow_secret_token=$1
+version=$2
+
+if [[ $version != "4.9.7" && $version != '5.1.0' ]]; then
+    echo -e "${red_color}The version is not supported!${rest_color}"
+    exit 1;
+fi;
 
 if [[ $blow_secret_token == "" ]]; then
     echo -e "${red_color}Blow secret token should be specified.${rest_color}"
@@ -34,29 +40,37 @@ ${sudo_prefix} mkdir /usr/share/phpmyadmin/
 current_dir=$PWD
 cd /usr/share/phpmyadmin/
 
+${sudo_prefix}rm -f ./phpMyAdmin-5.1.0-all-languages.tar.gz
 ${sudo_prefix}rm -f ./phpMyAdmin-4.9.7-all-languages.tar.gz
-${sudo_prefix}wget https://files.phpmyadmin.net/phpMyAdmin/4.9.7/phpMyAdmin-4.9.7-all-languages.tar.gz
 
-if [[ ! -f ./phpMyAdmin-4.9.7-all-languages.tar.gz ]]; then
+echo -e "${green_color}Download PHPMyAdmin-$version archive file...${rest_color}"
+echo ""
+${sudo_prefix}wget https://files.phpmyadmin.net/phpMyAdmin/$version/phpMyAdmin-$version-all-languages.tar.gz
+
+if [[ ! -f ./phpMyAdmin-$version-all-languages.tar.gz ]]; then
     echo -e "${red_color}The archive file is not downloaded successfully.${rest_color}"
     exit 1;
 fi;
 
 echo -e "${yellow_color}Archiving file...${rest_color}"
-${sudo_prefix}tar xzf phpMyAdmin-4.9.7-all-languages.tar.gz
-${sudo_prefix}mv phpMyAdmin-4.9.7-all-languages/* /usr/share/phpmyadmin
+${sudo_prefix}tar xzf phpMyAdmin-$version-all-languages.tar.gz
+${sudo_prefix}mv phpMyAdmin-$version-all-languages/* /usr/share/phpmyadmin
 
 echo -e "${yellow_color}Copy vendor_config.php.example file...${rest_color}"
-${sudo_prefix}cp $current_dir/vendor_config.php.example /usr/share/phpmyadmin/libraries/vendor_config.php
+${sudo_prefix}cp $current_dir/vendor_config$version.php.example /usr/share/phpmyadmin/libraries/vendor_config.php
 
 echo -e "${yellow_color}Copy blowfish_secret.inc.php.example file...${rest_color}"
 ${sudo_prefix}cp $current_dir/blowfish_secret.inc.php.example /var/lib/phpmyadmin/blowfish_secret.inc.php
 
 ${sudo_prefix}sed -i -e "s/token/${blow_secret_token}/g" /var/lib/phpmyadmin/blowfish_secret.inc.php
 
+if [[ $version == '5.1.0' ]]; then
+    ${sudo_prefix}cp $current_dir/config.sample.inc.php /usr/share/phpmyadmin/config.inc.php
+    ${sudo_prefix}sed -i -e "s/token/$blow_secret_token/g" /usr/share/phpmyadmin/config.inc.php
+fi;
 
-${sudo_prefix}rm -f /usr/share/phpmyadmin/phpMyAdmin-4.9.7-all-languages.tar.gz
-${sudo_prefix}rm -rf /usr/share/phpmyadmin/phpMyAdmin-4.9.7-all-languages
+${sudo_prefix}rm -f /usr/share/phpmyadmin/phpMyAdmin-$version-all-languages.tar.gz
+${sudo_prefix}rm -rf /usr/share/phpmyadmin/phpMyAdmin-$version-all-languages
 ${sudo_prefix}rm -rf /usr/share/phpmyadmin.bak
 
 echo ""
