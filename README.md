@@ -7,7 +7,11 @@
 ## Usage
 
 ```Bash
-./upgrader.sh blow_secret_token
+# For 4.9.7 version
+./upgrader.sh blow_secret_token 4.9.7
+
+# For 5.1.0 version
+./upgrader.sh blow_secret_token 5.1.0
 ```
 
 ## Current requirements
